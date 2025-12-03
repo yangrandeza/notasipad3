@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html manifest="cache.manifest">
+<html manifest="ios.manifest">
 <head>
     <meta charset="UTF-8">
-    <title>iPad 3 Notes</title>
+    <title>iPad 3 Notes v2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,9 +17,9 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* Barra de Status do Cache (NOVO) */
+        /* Barra de Status do Cache */
         #cache-status {
-            background: #ffcc00; /* Amarelo = Carregando */
+            background: #ffcc00; /* Amarelo */
             color: #000;
             text-align: center;
             padding: 10px;
@@ -34,11 +34,9 @@
             background-color: #f8f8f8;
             border-bottom: 1px solid #c7c7cc;
             height: 64px;
-            /* Ajuste para não ficar embaixo da status bar se estiver no modo app */
             padding-top: 20px; 
             display: flex; align-items: center; justify-content: center;
             position: relative;
-            margin-top: 0px; 
         }
 
         .header h1 { font-size: 17px; font-weight: 600; margin: 0; color: #000; }
@@ -52,7 +50,7 @@
         #list-container {
             height: calc(100% - 64px);
             overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding-top: 0; /* Removido padding extra */
+            padding-top: 0; 
         }
 
         .task-item {
@@ -127,29 +125,37 @@
             }
         }
 
-        // Eventos do AppCache
-        appCache.addEventListener('checking', function() { updateStatus('Buscando atualizações...', '#ffcc00'); }, false);
-        appCache.addEventListener('downloading', function() { updateStatus('Baixando App para uso Offline...', '#ffcc00'); }, false);
-        appCache.addEventListener('progress', function(e) { updateStatus('Baixando arquivos...', '#ffcc00'); }, false);
-        
-        appCache.addEventListener('cached', function() { 
-            updateStatus('PRONTO! Adicione à Tela de Início agora.', '#4cd964'); // Verde
-        }, false);
-        
-        appCache.addEventListener('updateready', function() { 
-            appCache.swapCache();
-            updateStatus('Atualizado! Recarregue a página.', '#4cd964'); 
-        }, false);
-        
-        appCache.addEventListener('noupdate', function() { 
-            updateStatus('App Offline Ativo.', '#4cd964'); // Verde
-        }, false);
-        
-        appCache.addEventListener('error', function(e) { 
-            updateStatus('ERRO no Cache. Verifique o arquivo manifest.', '#ff3b30'); // Vermelho
-        }, false);
+        if (appCache) {
+            appCache.addEventListener('checking', function() { updateStatus('Buscando atualizações...', '#ffcc00'); }, false);
+            appCache.addEventListener('downloading', function() { updateStatus('Baixando App Offline...', '#ffcc00'); }, false);
+            appCache.addEventListener('progress', function(e) { updateStatus('Baixando arquivos...', '#ffcc00'); }, false);
+            
+            appCache.addEventListener('cached', function() { 
+                updateStatus('PRONTO! Adicione à Tela de Início.', '#4cd964'); 
+            }, false);
+            
+            appCache.addEventListener('updateready', function() { 
+                appCache.swapCache();
+                updateStatus('Atualizado! Recarregue a página.', '#4cd964'); 
+            }, false);
+            
+            appCache.addEventListener('noupdate', function() { 
+                updateStatus('App Offline Ativo.', '#4cd964'); 
+            }, false);
+            
+            appCache.addEventListener('error', function(e) { 
+                // Tenta dar uma dica mais útil
+                console.log(e);
+                updateStatus('ERRO: Não achei "ios.manifest". Verifique o nome do arquivo.', '#ff3b30'); 
+            }, false);
+            
+            appCache.addEventListener('obsolete', function(e) { 
+                updateStatus('Manifesto obsoleto/apagado.', '#ff3b30'); 
+            }, false);
+        } else {
+            updateStatus('Seu dispositivo não suporta AppCache.', '#ff3b30');
+        }
 
-        // Se estiver rodando como App (tela cheia), esconder a barra
         if (window.navigator.standalone) {
             statusDiv.style.display = 'none';
         }
